@@ -23,6 +23,8 @@ func main() {
 			os.Exit(1)
 		}
 		d = uint8(parsed)
+	} else {
+		d = 7
 	}
 
 	const apiURL string = "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=60.10&lon=9.58"
@@ -109,7 +111,7 @@ func main() {
 		fmt.Println(message)
 
 		i++
-		if i == d {
+		if i == d + 1 {
 			break
 		}
 	}
