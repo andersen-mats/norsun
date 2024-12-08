@@ -9,9 +9,10 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/fatih/color"
 )
 	
-
 func main() {
 	var d uint8
 	if len(os.Args) >= 2 {
@@ -62,12 +63,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	curTemp := weather.Properties.Timeseries[0].Data.Instant.Details.AirTemperature
-	curWindSpeed := weather.Properties.Timeseries[0].Data.Instant.Details.WindSpeed
-	curSymbol := weather.Properties.Timeseries[0].Data.Next12Hours.Summary.SymbolCode
+	// curTemp := weather.Properties.Timeseries[0].Data.Instant.Details.AirTemperature
+	// curWindSpeed := weather.Properties.Timeseries[0].Data.Instant.Details.WindSpeed
+	// curSymbol := weather.Properties.Timeseries[0].Data.Next12Hours.Summary.SymbolCode
 
-	curStatus := fmt.Sprintf("Now: %s, %.0fC, %.0fm/s", curSymbol, curTemp, curWindSpeed)
-	fmt.Println(curStatus)
+	// curStatus := fmt.Sprintf("Now: %s, %.0fC, %.0fm/s", curSymbol, curTemp, curWindSpeed)
+	// fmt.Println(curStatus)
 
 	var i uint8
 	days := weather.Properties.Timeseries
@@ -79,17 +80,30 @@ func main() {
 			fmt.Printf("Error parsing time: %v\n", err)
 		}
 		dateStr := date.Format("01/02")
-		if date.Before(time.Now()) || dateStr == prev {
+		if dateStr == prev {
 			prev = dateStr
 			continue
 		}
+
+		if date.Before(time.Now()) {
+			dateStr = "Now: "
+		}
 		prev = dateStr
 
-		message := fmt.Sprintf("%s: %s (%.0fC, %.0fm/s)",
-			date.Format("01/02"),
-			strings.Split(day.Data.Next12Hours.Summary.SymbolCode, "_")[0],
-			day.Data.Instant.Details.AirTemperature,
+
+		dayTemp := day.Data.Instant.Details.AirTemperature
+		var dayTempStr string
+		if dayTemp <= 0 {
+			dayTempStr = color.CyanString(fmt.Sprintf("%.0fC", dayTemp))
+		} else if dayTemp >= 20 {
+			dayTempStr = color.RedString(fmt.Sprintf("%.0f", dayTemp))
+		}
+		
+		message := fmt.Sprintf("%s %s, %.0fm/s - %s",
+			dateStr,
+			dayTempStr,
 			day.Data.Instant.Details.WindSpeed,
+			strings.Split(day.Data.Next12Hours.Summary.SymbolCode, "_")[0],
 		)
 
 		fmt.Println(message)
